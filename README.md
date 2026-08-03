@@ -1,7 +1,22 @@
 # Verse & Advocate — Capacitor wrapper
 
-Native app wrapper around the static web app in `../bible-verse-finder/`.
-App id: `com.tjdoolittle.verseadvocate`.
+Native app wrapper around the static web app in
+[verse-advocate](https://github.com/tjdoolittle/verse-advocate).
+App id: `com.tjdoolittle.verseadvocate` (same on both platforms).
+
+## ⚠ Signing material is NOT in this repo
+
+`verse-advocate.keystore` and `android/keystore.properties` are gitignored,
+because a keystore plus its plaintext password does not belong in version
+control. They are therefore **not backed up by this repo** — keep the keystore
+somewhere durable (encrypted backup / password manager). If it is lost, the
+Play Store listing can never be updated again; a new app id would be required.
+
+## Store assets
+
+`store-listing/` holds everything both stores ask for: app icon, Play feature
+graphic, listing copy, and screenshots at every required size — Android phone,
+7" and 10" tablet, Chromebook, plus 6.9" iPhone and 13" iPad for the App Store.
 
 ## Updating the app after web changes
 
@@ -63,10 +78,9 @@ the Xcode release) plus an Apple Developer account ($99/yr).
 6. Product → Destination → "Any iOS Device", then Product → Archive →
    Distribute App → App Store Connect.
 7. In App Store Connect, create the app record (same bundle id), fill the
-   listing, and submit. Reuse the copy in `store-listing/descriptions.md` and
-   the privacy policy URL; iOS wants its own screenshot sizes — 6.9" iPhone
-   (1320×2868) and 13" iPad (2064×2752) — regenerate them with the Playwright
-   script pattern used for the Android shots.
+   listing, and submit. Reuse the copy in `store-listing/descriptions.md`, the
+   privacy policy URL, and the ready-made `ios-iphone69-*` (1320×2868) and
+   `ios-ipad13-*` (2064×2752) screenshots.
 
 Apple review takes ~1-3 days and has no equivalent of Google's 12-tester rule.
 
