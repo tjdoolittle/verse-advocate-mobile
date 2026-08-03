@@ -1,13 +1,15 @@
 {
   "name": "verse-advocate",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bible verse finder for arguments - native wrapper",
   "private": true,
   "scripts": {
-    "sync": "cap sync",
-    "sync:ios": "cap sync ios",
-    "open:android": "cap open android",
-    "open:ios": "cap open ios"
+    "sync:web": "node scripts/sync-web.mjs",
+    "sync": "node scripts/sync-web.mjs && cap sync",
+    "sync:ios": "node scripts/sync-web.mjs && cap sync ios",
+    "sync:android": "node scripts/sync-web.mjs && cap sync android",
+    "open:ios": "cap open ios",
+    "open:android": "cap open android"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.1",

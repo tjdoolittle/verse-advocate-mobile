@@ -18,13 +18,30 @@ Play Store listing can never be updated again; a new app id would be required.
 graphic, listing copy, and screenshots at every required size — Android phone,
 7" and 10" tablet, Chromebook, plus 6.9" iPhone and 13" iPad for the App Store.
 
+## First-time setup on a new machine (Mac or Windows)
+
+Everything works straight from this repo — no sibling checkouts, no manual
+file copying.
+
+```
+git clone https://github.com/tjdoolittle/verse-advocate-mobile.git
+cd verse-advocate-mobile
+npm install
+npm run sync        # pulls latest web app into www/, then cap sync
+```
+
+On macOS also mark the Gradle wrapper executable if git didn't:
+`chmod +x android/gradlew`
+
 ## Updating the app after web changes
 
-```powershell
-Copy-Item ..\bible-verse-finder\index.html, ..\bible-verse-finder\*.json, ..\bible-verse-finder\*.verses.txt, ..\bible-verse-finder\sw.js, ..\bible-verse-finder\icon-*.png www\ -Force
-Remove-Item www\Net.info.json, www\net.verses.txt -ErrorAction SilentlyContinue
-npx cap sync
-```
+`npm run sync` downloads the current web app from the public
+[verse-advocate](https://github.com/tjdoolittle/verse-advocate) repo into
+`www/` and syncs both native projects. Variants: `sync:web` (download only),
+`sync:ios`, `sync:android`.
+
+The NET Bible files are never fetched — that translation is licensed for
+non-commercial use only and is not redistributed.
 
 ## Debug build (sideload / testing)
 
@@ -106,15 +123,12 @@ Apple review takes ~1-3 days and has no equivalent of Google's 12-tester rule.
 
 ### Updating the web assets on the Mac
 
-The PowerShell copy step above, in bash:
-
 ```bash
-cp ../bible-verse-finder/index.html ../bible-verse-finder/*.json \
-   ../bible-verse-finder/*.verses.txt ../bible-verse-finder/sw.js \
-   ../bible-verse-finder/icon-*.png www/
-rm -f www/Net.info.json www/net.verses.txt
-npx cap sync
+npm run sync:ios
 ```
+
+That downloads the current web app from the public repo and copies it into the
+iOS bundle — no sibling checkout needed.
 
 Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in Xcode (General tab)
 before each new upload — App Store Connect rejects a duplicate build number.
