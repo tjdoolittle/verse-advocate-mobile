@@ -69,20 +69,55 @@ step and no `pod install` to run.
 Everything below needs a Mac with Xcode (Apple Silicon, macOS current enough for
 the Xcode release) plus an Apple Developer account ($99/yr).
 
-1. Copy this whole folder to the Mac (or clone it, if it gets committed).
-2. `npm install` to restore node_modules, then `npx cap sync ios`.
-3. Open `ios/App/App.xcodeproj` in Xcode.
-4. Select the App target → Signing & Capabilities → check "Automatically manage
-   signing" and pick your Team. Xcode registers the bundle id on first build.
-5. Run on a simulator or device to smoke-test.
-6. Product → Destination → "Any iOS Device", then Product → Archive →
+### On the Mac
+
+`ios/App/App/public` (the copy of `www/` that ships in the bundle) is
+gitignored and generated, so `cap sync` is not optional after a fresh clone —
+without it the app builds and launches to a blank screen.
+
+```bash
+git clone https://github.com/tjdoolittle/verse-advocate-mobile.git
+cd verse-advocate-mobile
+npm install
+npm run sync:ios      # copies www/ into the iOS bundle; also resolves SPM deps
+npm run open:ios      # opens ios/App/App.xcodeproj in Xcode
+```
+
+1. App target → Signing & Capabilities → check "Automatically manage signing"
+   and pick your Team. Xcode registers the bundle id on first build.
+2. Run on a simulator or device to smoke-test. Check that search returns
+   results, "Copy for your argument" pastes correctly, and all three
+   translations load — the Bible JSON is bundled, so this works in airplane mode.
+3. Product → Destination → "Any iOS Device", then Product → Archive →
    Distribute App → App Store Connect.
-7. In App Store Connect, create the app record (same bundle id), fill the
-   listing, and submit. Reuse the copy in `store-listing/descriptions.md`, the
-   privacy policy URL, and the ready-made `ios-iphone69-*` (1320×2868) and
+4. In App Store Connect, create the app record (same bundle id) and fill the
+   listing. Reuse the copy in `store-listing/descriptions.md`, the privacy
+   policy URL, and the ready-made `ios-iphone69-*` (1320×2868) and
    `ios-ipad13-*` (2064×2752) screenshots.
+5. App Privacy section: answer "Data Not Collected" — the app makes no network
+   calls at all. Age rating: no objectionable content, though the
+   questionnaire's "Religious content" style questions apply if asked.
+
+Export compliance is already declared in `Info.plist`
+(`ITSAppUsesNonExemptEncryption = false`), so App Store Connect will not ask
+the encryption question on each upload.
 
 Apple review takes ~1-3 days and has no equivalent of Google's 12-tester rule.
+
+### Updating the web assets on the Mac
+
+The PowerShell copy step above, in bash:
+
+```bash
+cp ../bible-verse-finder/index.html ../bible-verse-finder/*.json \
+   ../bible-verse-finder/*.verses.txt ../bible-verse-finder/sw.js \
+   ../bible-verse-finder/icon-*.png www/
+rm -f www/Net.info.json www/net.verses.txt
+npx cap sync
+```
+
+Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in Xcode (General tab)
+before each new upload — App Store Connect rejects a duplicate build number.
 
 ## Icons / splash
 
