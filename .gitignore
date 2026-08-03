@@ -1,0 +1,24 @@
+# --- Signing material: NEVER commit. Back these up separately (see README). ---
+# Losing the keystore means the Play Store app can never be updated again.
+*.keystore
+*.jks
+keystore.properties
+android/keystore.properties
+
+# Dependencies
+node_modules/
+
+# Build output
+android/app/build/
+android/build/
+ios/App/build/
+ios/DerivedData/
+
+# Tooling / local state
+.env.local
+.vercel
+npm-debug.log*
+
+# OS junk
+.DS_Store
+Thumbs.db

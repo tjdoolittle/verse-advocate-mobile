@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verse Advocate — Bible Verse Finder for Arguments</title>
+<meta name="description" content="Describe your argument in plain English and get the Bible verses that best support it. Searches the WEB, KJV, and Tyndale translations entirely in your browser.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#8a3324">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+  :root {
+    --bg: #f6f2ea;
+    --panel: #fffdf8;
+    --ink: #2b2620;
+    --ink-soft: #6b6257;
+    --accent: #8a3324;
+    --accent-soft: #b5573f;
+    --gold: #b08d3e;
+    --line: #e2d9c8;
+    --hl: #f3e3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 28px 20px 80px; }
+  header { text-align: center; margin-bottom: 26px; }
+  header h1 {
+    font-size: 2.1rem; letter-spacing: 0.5px;
+    color: var(--accent);
+  }
+  header h1 .amp { color: var(--gold); }
+  header p { color: var(--ink-soft); margin-top: 6px; font-style: italic; }
+
+  .searchbox {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 10px rgba(60,45,20,0.07);
+  }
+  .searchrow { display: flex; gap: 10px; }
+  #query {
+    flex: 1;
+    font-family: inherit;
+    font-size: 1.05rem;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  #query:focus { outline: 2px solid var(--gold); border-color: var(--gold); }
+  #go {
+    font-family: inherit;
+    font-size: 1.02rem;
+    padding: 12px 22px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    cursor: pointer;
+  }
+  #go:hover { background: var(--accent-soft); }
+  .options {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: center;
+    margin-top: 12px; font-size: 0.92rem; color: var(--ink-soft);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .options label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
+  .options select {
+    font-family: inherit; padding: 4px 6px; border: 1px solid var(--line);
+    border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  .hints { margin-top: 12px; font-size: 0.88rem; color: var(--ink-soft); font-family: 'Segoe UI', system-ui, sans-serif; }
+  .hints .chip {
+    display: inline-block; margin: 3px 4px 0 0; padding: 4px 11px;
+    background: #efe7d6; border: 1px solid var(--line); border-radius: 999px;
+    cursor: pointer; color: var(--ink);
+  }
+  .hints .chip:hover { background: var(--hl); }
+  .hints .ctrl {
+    display: inline-block; margin-left: 8px; cursor: pointer;
+    color: var(--accent); text-decoration: underline dotted;
+  }
+  .hints .ctrl:hover { color: var(--accent-soft); }
+
+  #status { margin: 18px 4px; color: var(--ink-soft); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 0.95rem; }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--gold);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 6px rgba(60,45,20,0.05);
+  }
+  .card.top { border-left-color: var(--accent); }
+  .card .ref {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .card .ref b { color: var(--accent); font-size: 1.05rem; }
+  .card .ref .meta { font-size: 0.78rem; color: var(--ink-soft); font-family: 'Segoe UI', system-ui, sans-serif; }
+  .card .text { font-size: 1.08rem; line-height: 1.55; }
+  .card .text mark { background: var(--hl); padding: 0 2px; border-radius: 3px; }
+  .card .why {
+    margin-top: 10px; font-size: 0.82rem; color: var(--ink-soft);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+  }
+  .card .actions { margin-top: 10px; display: flex; gap: 8px; }
+  .card .actions button {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 0.8rem; padding: 5px 12px;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: #fff; color: var(--ink); cursor: pointer;
+  }
+  .card .actions button:hover { background: var(--hl); }
+  .context {
+    display: none; margin-top: 10px; padding: 10px 12px;
+    background: #f4eee1; border-radius: 8px;
+    font-size: 0.95rem; line-height: 1.5; color: #4a4238;
+  }
+  .context .cur { background: var(--hl); }
+  .context .vnum { color: var(--gold); font-size: 0.75rem; vertical-align: super; margin-right: 2px; }
+  .badge {
+    display: inline-block; font-size: 0.7rem; letter-spacing: 0.06em;
+    text-transform: uppercase; background: var(--accent); color: #fff;
+    border-radius: 4px; padding: 2px 8px; margin-left: 8px;
+    font-family: 'Segoe UI', system-ui, sans-serif; vertical-align: middle;
+  }
+  .empty { text-align: center; color: var(--ink-soft); padding: 40px 0; font-style: italic; }
+  @media (max-width: 480px) {
+    .searchrow { flex-direction: column; }
+    #go { width: 100%; }
+    header h1 { font-size: 1.7rem; }
+  }
+  footer { margin-top: 40px; text-align: center; font-size: 0.8rem; color: var(--ink-soft); font-family: 'Segoe UI', system-ui, sans-serif; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Verse <span class="amp">&amp;</span> Advocate</h1>
+    <p>Describe your argument — get the verses that back it up.</p>
+  </header>
+
+  <div class="searchbox">
+    <div class="searchrow">
+      <input id="query" type="text" placeholder='e.g. "forgiveness matters more than revenge" or "pride comes before a fall"'
+             autocomplete="off" autofocus>
+      <button id="go">Find verses</button>
+    </div>
+    <div class="options">
+      <label><input type="radio" name="testament" value="all" checked> Whole Bible</label>
+      <label><input type="radio" name="testament" value="ot"> Old Testament</label>
+      <label><input type="radio" name="testament" value="nt"> New Testament</label>
+      <label>Translation:
+        <select id="translation">
+          <option value="web" selected>WEB (World English)</option>
+          <option value="kjv">KJV (1611)</option>
+          <option value="tyndale">Tyndale (1534)</option>
+        </select>
+      </label>
+      <label>Results:
+        <select id="limit">
+          <option>10</option><option selected>15</option><option>25</option><option>50</option>
+        </select>
+      </label>
+    </div>
+    <div class="hints" id="hints">
+      <span id="topics-wrap">Try a topic: <span id="chips"></span><span class="ctrl" id="shuffle" title="Different suggestions">↻ shuffle</span></span><span class="ctrl" id="topics-toggle">hide topics</span>
+    </div>
+  </div>
+
+  <div id="status">Loading Scripture…</div>
+  <div id="results"></div>
+
+  <footer><span id="attribution"></span> Search runs entirely in your browser — nothing is sent anywhere.</footer>
+</div>
+
+<script>
+"use strict";
+
+// ---------- Book metadata (canonical order matches kjv.json) ----------
+const BOOK_NAMES = [
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra",
+  "Nehemiah","Esther","Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon",
+  "Isaiah","Jeremiah","Lamentations","Ezekiel","Daniel","Hosea","Joel","Amos",
+  "Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah",
+  "Malachi","Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians",
+  "2 Corinthians","Galatians","Ephesians","Philippians","Colossians",
+  "1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon",
+  "Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"
+];
+const NT_START = 39; // Matthew
+
+// ---------- Topic thesaurus: modern words -> KJV vocabulary ----------
+// Expansion terms score at reduced weight so literal matches still win.
+const THESAURUS = {
+  argue: ["strife","contention","contentious","debate","dispute","quarrel"],
+  argument: ["strife","contention","debate","dispute"],
+  fight: ["strife","contention","war","quarrel"],
+  anger: ["wrath","angry","fury","rage","provoke"],
+  angry: ["wrath","anger","fury","slow to anger"],
+  revenge: ["vengeance","avenge","recompense","repay","requite"],
+  forgiveness: ["forgive","forgiveness","forgiving","mercy","pardon","trespasses"],
+  forgive: ["forgiveness","mercy","pardon","trespasses"],
+  mercy: ["merciful","compassion","lovingkindness","pity"],
+  love: ["charity","loveth","beloved","lovingkindness"],
+  kindness: ["kind","gentleness","compassion","tenderhearted"],
+  money: ["riches","wealth","mammon","gold","silver","covetousness","gain"],
+  rich: ["riches","wealth","abundance"],
+  greed: ["covet","covetousness","greedy","gain","mammon"],
+  pride: ["proud","haughty","lofty","arrogancy","vanity"],
+  proud: ["pride","haughty","lofty"],
+  humility: ["humble","lowly","meek","meekness"],
+  humble: ["humility","lowly","meek"],
+  honesty: ["truth","true","just weights","upright","integrity","lying"],
+  lying: ["lie","liar","false witness","deceit","deceitful"],
+  lies: ["lie","liar","false witness","deceit"],
+  justice: ["judgment","just","righteous","righteousness","equity","oppressed"],
+  fairness: ["just","equity","judgment","righteous"],
+  work: ["labour","labor","diligent","diligence","slothful","idle","hands"],
+  laziness: ["slothful","sluggard","idle","idleness"],
+  lazy: ["slothful","sluggard","idle"],
+  fear: ["afraid","dismayed","terror","dread","courage"],
+  courage: ["courageous","strong","fear not","good courage","dismayed"],
+  worry: ["care","careful","thought","anxious","troubled","morrow","take no thought"],
+  anxiety: ["care","careful","thought","troubled","peace","take no thought"],
+  future: ["morrow","tomorrow","latter end","time to come","hope"],
+  tomorrow: ["morrow","boast not"],
+  control: ["temperance","sober","rule his spirit","bridleth","refraineth","slow to anger"],
+  controlling: ["temperance","rule his spirit","bridleth","refraineth","slow to anger"],
+  stress: ["troubled","care","rest","peace"],
+  faith: ["believe","belief","faithful","trust"],
+  doubt: ["believe","unbelief","wavering","faith"],
+  trust: ["trusteth","confidence","lean","faith"],
+  hope: ["hopeth","expectation","wait"],
+  patience: ["patient","longsuffering","endure","endureth","wait"],
+  marriage: ["wife","husband","marry","married","one flesh","wedding"],
+  divorce: ["put away","divorcement","wife","husband"],
+  children: ["child","son","daughter","train up","offspring"],
+  parenting: ["train up","child","chasten","instruction","father","mother"],
+  discipline: ["chasten","chastening","correction","rod","instruction"],
+  alcohol: ["wine","strong drink","drunkard","drunkenness","sober"],
+  drinking: ["wine","strong drink","drunkard","drunkenness"],
+  drunk: ["drunkard","drunkenness","wine","strong drink"],
+  judging: ["judge","judgment","mote","beam","condemn"],
+  judgment: ["judge","condemn","justice"],
+  gossip: ["talebearer","whisperer","backbiting","slander","tongue"],
+  slander: ["talebearer","whisperer","backbiting","false witness"],
+  tongue: ["mouth","lips","words","speech"],
+  generosity: ["give","giveth","liberal","bountiful","alms","poor"],
+  giving: ["give","giveth","alms","cheerful giver","bountifully"],
+  charity: ["alms","give","poor","love"],
+  poverty: ["poor","needy","beggar","want"],
+  poor: ["needy","poverty","alms"],
+  death: ["die","dieth","grave","mortality","sting"],
+  grief: ["mourn","mourning","sorrow","comfort","weep"],
+  loss: ["mourn","sorrow","comfort"],
+  peace: ["peaceably","peacemakers","rest","quietness"],
+  war: ["battle","fight","sword","armies"],
+  government: ["ruler","king","powers","authority","caesar","magistrate"],
+  authority: ["power","ruler","obey","subjection"],
+  taxes: ["tribute","caesar","custom","render"],
+  freedom: ["liberty","free","bondage","yoke"],
+  truth: ["true","truly","verity","faithful"],
+  wisdom: ["wise","understanding","knowledge","prudent","discretion"],
+  foolishness: ["fool","foolish","folly","simple"],
+  friendship: ["friend","friends","brother","companion","sticketh"],
+  friends: ["friend","brother","companion"],
+  enemies: ["enemy","adversary","persecute","hate","despitefully"],
+  enemy: ["enemies","adversary","hate"],
+  hate: ["hatred","hateth","abhor","despise"],
+  jealousy: ["envy","envying","jealous","covet"],
+  envy: ["envying","jealous","covet"],
+  temptation: ["tempt","tempted","tempteth","deliver","flee"],
+  sin: ["sinner","iniquity","transgression","trespass","wickedness"],
+  repentance: ["repent","repenteth","turn","confess"],
+  salvation: ["saved","save","redeem","redemption","everlasting life","eternal life"],
+  heaven: ["kingdom","paradise","eternal","everlasting"],
+  hell: ["fire","damnation","perish","destruction","outer darkness"],
+  prayer: ["pray","prayeth","supplication","petition","ask"],
+  obedience: ["obey","obeyeth","keep","commandments","hearken"],
+  strength: ["strong","strengthen","might","power"],
+  weakness: ["weak","infirmity","strength","grace"],
+  healing: ["heal","healed","healeth","physician","whole"],
+  sickness: ["sick","disease","infirmity","heal"],
+  food: ["eat","bread","meat","hunger"],
+  gluttony: ["appetite","belly","excess","riotous eaters"],
+  beauty: ["beautiful","comely","fair","adorning"],
+  age: ["old","hoary","gray","elder","aged"],
+  youth: ["young","youthful","childhood"],
+  time: ["season","day","hour","appointed"],
+  planning: ["counsel","purpose","plans","devise","establish"],
+  success: ["prosper","prosperity","establish","succeed"],
+  failure: ["fall","falleth","stumble","riseth"],
+  perseverance: ["endure","endureth","stedfast","faint not","press"],
+  gratitude: ["thanks","thanksgiving","thankful","praise"],
+  complaining: ["murmur","murmured","murmurings","complain"],
+  contentment: ["content","sufficient","godliness","gain"],
+  ambition: ["exalt","exalted","first","greatest","servant"],
+  leadership: ["shepherd","ruler","servant","lead","feed"],
+  service: ["serve","serveth","servant","minister"],
+  hospitality: ["stranger","lodge","entertain","sojourner"],
+  welcome: ["hospitality","stranger","entertain","receive","took me in"],
+  welcoming: ["hospitality","stranger","entertain","receive","took me in"],
+  immigration: ["stranger","sojourner","alien","foreigner"],
+  animals: ["beast","cattle","sparrow","ox"],
+  creation: ["created","made","beginning","formed"],
+  science: ["knowledge","understanding","heavens declare","search"],
+  swearing: ["oath","swear","vain","corrupt communication","cursing"],
+  profanity: ["corrupt communication","cursing","filthy","tongue"],
+  modesty: ["modest","apparel","adorning","shamefacedness"],
+  laziness_of_speech: ["idle words"],
+  vegetarian: ["herbs","meat","eateth","every moving thing"],
+  tattoo: ["cuttings","marks","flesh","print"],
+  debt: ["borrow","borrower","lender","owe","surety","usury"],
+  lending: ["lend","lendeth","usury","borrower"],
+  gambling: ["lot","hasteth to be rich","chance","vain"],
+  hard_work: ["diligent","labour","sweat"],
+  rest: ["sabbath","rest","weary","heavy laden"],
+  sleep: ["slumber","sleepeth","rest"],
+  unity: ["one accord","together","one body","dwell together"],
+  division: ["divided","divisions","schism","strife"],
+  racism: ["respect of persons","partiality","one blood","neighbour"],
+  equality: ["respect of persons","one blood","neither jew nor greek","partiality"],
+  hypocrisy: ["hypocrite","hypocrites","pharisee","mote","beam"],
+  humbleness: ["humble","meek","lowly"],
+  self_control: ["temperance","sober","rule his spirit","bridleth"],
+  words: ["tongue","mouth","lips","speech","answer"],
+};
+
+// ---------- Light stemmer (handles KJV -eth/-est endings too) ----------
+const STOP = new Set(("a,an,and,are,as,at,be,but,by,for,if,in,into,is,it,no,not,of,on,or,such,that,the,their,then,"+
+  "there,these,they,this,to,was,will,with,i,me,my,we,us,you,your,he,him,his,she,her,them,than,so,do,does,did,"+
+  "have,has,had,what,which,who,whom,when,where,why,how,about,against,should,would,could,can,may,might,shall,"+
+  "more,most,very,too,also,just,really,good,better,best,thing,things,someone,people,verse,verses,bible,say,says,"+
+  "said,argument,argue,make,makes,making,want,need,think,thinks,important,matter,matters,"+
+  "don't,dont,doesn't,doesnt,isn't,isnt,won't,wont,can't,cant,shouldn't,shouldnt,never,always,"+
+  "other,others,everyone,anyone,somebody,anybody,people's,ok,okay,vs,versus").split(","));
+// note: "argument"/"argue" stay in THESAURUS lookup before stopword removal
+
+function stem(w) {
+  w = w.toLowerCase().replace(/[^a-z']/g, "");
+  if (w.length <= 3) return w;
+  w = w.replace(/'s$/, "");
+  if (w.length > 6 && /ness$/.test(w)) w = w.replace(/ness$/, "");   // forgiveness -> forgive
+  if (w.length > 5 && /ly$/.test(w)) w = w.replace(/ly$/, "");       // carefully -> careful
+  if (w.length > 5 && /(eth|est|ing)$/.test(w)) w = w.replace(/(eth|est|ing)$/, "");
+  else if (w.length > 4 && /(ies)$/.test(w)) w = w.replace(/ies$/, "y");
+  else if (w.length > 4 && /(ed|es)$/.test(w)) w = w.replace(/(ed|es)$/, "");
+  else if (w.length > 3 && /s$/.test(w) && !/ss$/.test(w)) w = w.replace(/s$/, "");
+  if (/(.)\1$/.test(w) && w.length > 3) w = w.slice(0, -1); // stopp -> stop
+  if (w.length > 4 && /e$/.test(w)) w = w.slice(0, -1);     // forgive/loveth/loving -> forgiv/lov
+  return w;
+}
+function tokenize(text) {
+  return text.toLowerCase().split(/[^a-z']+/i).filter(w => w.length > 1);
+}
+
+// ---------- Translations ----------
+const TRANSLATIONS = {
+  web: { file: "web.verses.txt", type: "bss", name: "World English Bible", short: "WEB",
+         attribution: "Text: World English Bible (public domain)." },
+  kjv: { file: "kjv.json", type: "kjvjson", name: "King James Version", short: "KJV",
+         attribution: "Text: King James Version (public domain)." },
+  tyndale: { file: "Tyndale.verses.txt", type: "bss", name: "Tyndale Bible", short: "Tyndale",
+             attribution: "Text: William Tyndale's translation, 1534 (public domain). Covers Genesis–Deuteronomy, Jonah, and the New Testament only." },
+};
+
+// ---------- Data + index ----------
+let VERSES = [];          // {b: book idx, c: chapter, v: verse, t: text}
+let INDEX = new Map();    // stem -> list of verse ids
+let DF = new Map();       // stem -> document frequency
+let CURRENT = "web";
+const statusEl = document.getElementById("status");
+const resultsEl = document.getElementById("results");
+
+function cleanText(t) {
+  return t
+    .replace(/\{[^}]*:[^}]*\}/g, "")  // KJV marginal footnotes: {judgeth...: or, ...}
+    .replace(/[{}¶]/g, "")            // KJV italics braces, paragraph/heading markers
+    .replace(/[‘’]/g, "'")  // curly apostrophes -> straight (so "LORD's" tokenizes)
+    .replace(/\s+/g, " ").trim();
+}
+
+function parseKjvJson(raw) {
+  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1);
+  const verses = [];
+  JSON.parse(raw).forEach((book, bi) => {
+    book.chapters.forEach((chap, ci) => {
+      chap.forEach((v, vi) => verses.push({ b: bi, c: ci + 1, v: vi + 1, t: cleanText(v) }));
+    });
+  });
+  return verses;
+}
+
+// Bible SuperSearch module: "book#|chapter|verse|text|italics|strongs", # comments
+function parseBss(raw) {
+  const verses = [];
+  for (const line of raw.split("\n")) {
+    if (!line || line[0] === "#") continue;
+    const parts = line.split("|");
+    if (parts.length < 4) continue;
+    const b = parseInt(parts[0], 10) - 1;
+    if (!(b >= 0 && b < 66)) continue;
+    verses.push({ b, c: parseInt(parts[1], 10), v: parseInt(parts[2], 10), t: cleanText(parts[3]) });
+  }
+  return verses;
+}
+
+async function load(key) {
+  const T = TRANSLATIONS[key];
+  statusEl.textContent = `Loading ${T.name}…`;
+  try {
+    const res = await fetch(T.file);
+    if (!res.ok) throw new Error(`${T.file}: HTTP ${res.status}`);
+    const raw = await res.text();
+    VERSES = T.type === "kjvjson" ? parseKjvJson(raw) : parseBss(raw);
+    INDEX = new Map();
+    DF = new Map();
+    for (let id = 0; id < VERSES.length; id++) {
+      const seen = new Set();
+      for (const w of tokenize(VERSES[id].t)) {
+        const s = stem(w);
+        if (!s || STOP.has(s)) continue;
+        let list = INDEX.get(s);
+        if (!list) INDEX.set(s, list = []);
+        list.push(id);
+        if (!seen.has(s)) { seen.add(s); DF.set(s, (DF.get(s) || 0) + 1); }
+      }
+    }
+    CURRENT = key;
+    localStorage.setItem("bvf-translation", key);
+    document.getElementById("attribution").textContent = T.attribution;
+    statusEl.textContent = `Ready — ${VERSES.length.toLocaleString()} verses indexed (${T.short}). State your case above.`;
+    if (queryEl.value.trim()) render(queryEl.value.trim());
+  } catch (e) {
+    statusEl.textContent = `Could not load ${T.file} — serve this folder over HTTP (e.g. python -m http.server).`;
+    console.error(e);
+  }
+}
+
+// ---------- Search ----------
+function expandQuery(qText) {
+  const words = tokenize(qText);
+  const primary = new Map();   // stem -> weight 1.0
+  const expanded = new Map();  // stem -> {weight, src} where src is the primary stem it expands
+  const phrases = [];          // {phrase, src} multi-word expansions, phrase-matched
+
+  for (const w of words) {
+    const lw = w.toLowerCase();
+    const syns = THESAURUS[lw] || THESAURUS[stem(lw)];
+    const s = stem(lw);
+    const keep = s && !STOP.has(lw) && !STOP.has(s);
+    if (keep) primary.set(s, 1.0);
+    if (syns) {
+      const src = keep ? s : lw;   // topic words like "argument" are stopped but still expand
+      for (const syn of syns) {
+        if (syn.includes(" ")) { phrases.push({ phrase: syn, src }); continue; }
+        const ss = stem(syn);
+        if (ss && !primary.has(ss)) expanded.set(ss, { weight: 0.45, src });
+      }
+    }
+  }
+  return { primary, expanded, phrases, raw: qText.toLowerCase() };
+}
+
+function search(qText, testament, limit) {
+  const { primary, expanded, phrases, raw } = expandQuery(qText);
+  if (primary.size === 0 && expanded.size === 0 && phrases.length === 0) return { hits: [], primary, expanded };
+
+  const N = VERSES.length;
+  const scores = new Map(); // id -> {score, matched:Set, expMatched:Set, covered:Set}
+  const getRec = id => {
+    let rec = scores.get(id);
+    if (!rec) scores.set(id, rec = { score: 0, matched: new Set(), expMatched: new Set(), covered: new Set() });
+    return rec;
+  };
+  for (const [term, weight] of primary) {
+    const list = INDEX.get(term);
+    if (!list) continue;
+    const idf = Math.log(1 + N / (DF.get(term) || 1));
+    for (const id of list) {
+      const rec = getRec(id);
+      rec.score += weight * idf;
+      rec.matched.add(term);
+      rec.covered.add(term);
+    }
+  }
+  for (const [term, { weight, src }] of expanded) {
+    const list = INDEX.get(term);
+    if (!list) continue;
+    const idf = Math.log(1 + N / (DF.get(term) || 1));
+    for (const id of list) {
+      const rec = getRec(id);
+      rec.score += weight * idf;
+      rec.expMatched.add(term);
+      rec.covered.add(src);
+    }
+  }
+
+  // topics counted for coverage: primary terms that exist somewhere in the text
+  // (a word like "control" never appears in the KJV — only its synonyms can cover it),
+  // plus stopped topic words that expanded
+  const topics = new Set();
+  for (const term of primary.keys()) if (INDEX.has(term)) topics.add(term);
+  for (const { src } of expanded.values()) topics.add(src);
+  for (const { src } of phrases) topics.add(src);
+
+  const results = [];
+  for (const [id, rec] of scores) {
+    const V = VERSES[id];
+    if (testament === "ot" && V.b >= NT_START) continue;
+    if (testament === "nt" && V.b < NT_START) continue;
+
+    const lower = V.t.toLowerCase();
+    for (const { phrase, src } of phrases) {
+      if (lower.includes(phrase)) { rec.score += 3; rec.expMatched.add(phrase); rec.covered.add(src); }
+    }
+
+    const nWords = V.t.split(/\s+/).length;
+    // coverage of distinct query topics (a synonym match covers its topic) is the strongest signal
+    const coverage = topics.size ? rec.covered.size / topics.size : 0.5;
+    let score = rec.score * (0.4 + 1.8 * coverage);
+    // prefer punchy, quotable verses over long genealogies (also breaks ties)
+    score *= 34 / (34 + nWords);
+    // exact phrase of the whole query (rare, huge boost)
+    if (raw.length > 8 && lower.includes(raw)) score += 8;
+
+    results.push({ id, score, matched: rec.matched, expMatched: rec.expMatched });
+  }
+  results.sort((a, b) => b.score - a.score);
+  return { hits: results.slice(0, limit), primary, expanded };
+}
+
+// ---------- Rendering ----------
+function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+
+function highlight(text, terms) {
+  if (!terms.size) return esc(text);
+  const words = text.split(/(\s+)/);
+  return words.map(w => {
+    const s = stem(w);
+    return (s && terms.has(s)) ? `<mark>${esc(w)}</mark>` : esc(w);
+  }).join("");
+}
+
+function refOf(V) { return `${BOOK_NAMES[V.b]} ${V.c}:${V.v}`; }
+
+function render(qText) {
+  const testament = document.querySelector('input[name="testament"]:checked').value;
+  const limit = parseInt(document.getElementById("limit").value, 10);
+  const t0 = performance.now();
+  const { hits, primary, expanded } = search(qText, testament, limit);
+  const ms = (performance.now() - t0).toFixed(0);
+
+  if (!hits.length) {
+    statusEl.textContent = "No matches — try rephrasing, or use one of the topic chips.";
+    resultsEl.innerHTML = `<div class="empty">Nothing found for that phrasing.<br>Try plainer words: "money", "forgiveness", "pride"…</div>`;
+    return;
+  }
+  statusEl.textContent = `${hits.length} verse${hits.length > 1 ? "s" : ""} for your case (searched ${VERSES.length.toLocaleString()} verses in ${ms} ms).`;
+
+  const allTerms = new Set([...primary.keys(), ...expanded.keys()]);
+  resultsEl.innerHTML = hits.map((h, i) => {
+    const V = VERSES[h.id];
+    const ref = refOf(V);
+    const whyBits = [];
+    if (h.matched.size) whyBits.push(`matches: ${[...h.matched].join(", ")}`);
+    if (h.expMatched.size) whyBits.push(`related: ${[...h.expMatched].join(", ")}`);
+    return `
+    <div class="card ${i === 0 ? "top" : ""}">
+      <div class="ref">
+        <span><b>${ref}</b>${i === 0 ? '<span class="badge">Strongest match</span>' : ""}</span>
+        <span class="meta">relevance ${h.score.toFixed(1)}</span>
+      </div>
+      <div class="text">${highlight(V.t, allTerms)}</div>
+      <div class="why">${esc(whyBits.join(" · "))}</div>
+      <div class="actions">
+        <button data-copy="${esc(`"${V.t}" — ${ref} (${TRANSLATIONS[CURRENT].short})`)}">Copy for your argument</button>
+        <button data-ctx="${h.id}">Show context</button>
+      </div>
+      <div class="context" id="ctx-${h.id}"></div>
+    </div>`;
+  }).join("");
+}
+
+// context expansion: same chapter, +/- 2 verses
+function showContext(id, el) {
+  if (el.style.display === "block") { el.style.display = "none"; return; }
+  const V = VERSES[id];
+  const around = [];
+  for (let d = -2; d <= 2; d++) {
+    const idx = id + d;
+    if (idx < 0 || idx >= VERSES.length) continue;
+    const W = VERSES[idx];
+    if (W.b !== V.b || W.c !== V.c) continue;
+    around.push(`<span class="${d === 0 ? "cur" : ""}"><span class="vnum">${W.v}</span>${esc(W.t)}</span>`);
+  }
+  el.innerHTML = `<b style="font-family:'Segoe UI',sans-serif;font-size:0.78rem;color:var(--gold)">${BOOK_NAMES[V.b]} ${V.c}</b><br>` + around.join(" ");
+  el.style.display = "block";
+}
+
+// ---------- Wiring ----------
+const queryEl = document.getElementById("query");
+function run() {
+  const q = queryEl.value.trim();
+  if (!q) return;
+  if (!VERSES.length) { statusEl.textContent = "Still loading Scripture — one moment…"; return; }
+  render(q);
+}
+document.getElementById("go").addEventListener("click", run);
+queryEl.addEventListener("keydown", e => { if (e.key === "Enter") run(); });
+document.querySelectorAll('input[name="testament"]').forEach(r => r.addEventListener("change", () => queryEl.value.trim() && run()));
+document.getElementById("limit").addEventListener("change", () => queryEl.value.trim() && run());
+document.getElementById("translation").addEventListener("change", e => load(e.target.value));
+
+resultsEl.addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  if (btn.dataset.copy !== undefined) {
+    navigator.clipboard.writeText(btn.dataset.copy).then(() => {
+      const old = btn.textContent; btn.textContent = "Copied ✓";
+      setTimeout(() => btn.textContent = old, 1200);
+    });
+  } else if (btn.dataset.ctx !== undefined) {
+    showContext(parseInt(btn.dataset.ctx, 10), document.getElementById("ctx-" + btn.dataset.ctx));
+  }
+});
+
+// topic chips: a few anchors always show, the rest are drawn at random from the pool
+const CHIP_ANCHORS = ["forgiveness vs revenge", "money and greed", "pride comes before a fall"];
+const CHIP_POOL = [
+  "hard work vs laziness", "don't judge others", "controlling your anger", "worry and anxiety",
+  "gossip and slander", "helping the poor", "patience", "love your enemies", "the power of words",
+  "telling the truth", "humility over pride", "dealing with grief", "standing up to fear",
+  "true friendship", "jealousy and envy", "gratitude and thanksgiving", "contentment with what you have",
+  "resisting temptation", "obeying authority", "paying taxes", "marriage and love", "raising children",
+  "drinking and self-control", "hypocrisy", "unity over division", "welcoming strangers",
+  "rest and burnout", "debt and lending", "planning for the future", "hope in hard times",
+  "wisdom over foolishness", "making peace", "generosity", "perseverance", "complaining",
+  "trusting God's plan"
+];
+const CHIP_COUNT = 10;
+const chipsEl = document.getElementById("chips");
+const topicsWrapEl = document.getElementById("topics-wrap");
+const topicsToggleEl = document.getElementById("topics-toggle");
+
+function renderChips() {
+  const pick = [...CHIP_POOL].sort(() => Math.random() - 0.5).slice(0, CHIP_COUNT - CHIP_ANCHORS.length);
+  chipsEl.innerHTML = "";
+  for (const t of [...CHIP_ANCHORS, ...pick]) {
+    const s = document.createElement("span");
+    s.className = "chip"; s.textContent = t;
+    s.addEventListener("click", () => { queryEl.value = t; run(); });
+    chipsEl.appendChild(s);
+  }
+}
+function setTopicsVisible(visible) {
+  topicsWrapEl.style.display = visible ? "" : "none";
+  topicsToggleEl.textContent = visible ? "hide topics" : "show topics";
+  localStorage.setItem("bvf-topics", visible ? "shown" : "hidden");
+}
+document.getElementById("shuffle").addEventListener("click", renderChips);
+topicsToggleEl.addEventListener("click", () => setTopicsVisible(topicsWrapEl.style.display === "none"));
+renderChips();
+setTopicsVisible(localStorage.getItem("bvf-topics") !== "hidden");
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+
+const savedTranslation = localStorage.getItem("bvf-translation");
+const initial = TRANSLATIONS[savedTranslation] ? savedTranslation : "web";
+document.getElementById("translation").value = initial;
+load(initial);
+</script>
+</body>
+</html>

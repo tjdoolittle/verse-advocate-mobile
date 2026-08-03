@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Verse &amp; Advocate</string>
+    <string name="title_activity_main">Verse &amp; Advocate</string>
+    <string name="package_name">com.tjdoolittle.verseadvocate</string>
+    <string name="custom_url_scheme">com.tjdoolittle.verseadvocate</string>
+</resources>

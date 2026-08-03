@@ -1,0 +1,8 @@
+{
+  "appId": "com.tjdoolittle.verseadvocate",
+  "appName": "Verse & Advocate",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  }
+}
