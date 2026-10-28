@@ -150,8 +150,12 @@ Collected**. Review takes ~1–3 days.
 ## Cost
 
 This repo is private, and macOS runners bill at a **10× minute multiplier**. The
-2,000 included minutes on the Free plan work out to **200 macOS minutes/month**
-— roughly 20–40 runs, since a build check is ~5 min and a release ~10 min.
+2,000 included minutes on the Free plan work out to **200 macOS minutes/month**.
+
+A build check measures ~1m40s end to end (checkout, `npm ci`, `cap sync`, and a
+~80-second `xcodebuild`), so it bills as 2 minutes → 20 of your 200. That is
+roughly 100 build checks a month. A release run is longer — archive plus export
+plus upload — so budget nearer 10 minutes, or 100 billed, for each.
 
 The build check is path-filtered so it only runs when `ios/`, `www/`, or the
 dependencies change. If minutes get tight, drop its `push`/`pull_request`
