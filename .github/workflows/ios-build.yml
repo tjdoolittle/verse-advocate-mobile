@@ -32,6 +32,11 @@ concurrency:
   group: ios-build-${{ github.ref }}
   cancel-in-progress: true
 
+# Read-only token: these workflows build and upload to Apple, and must never
+# be able to write to the repository.
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: macos-26

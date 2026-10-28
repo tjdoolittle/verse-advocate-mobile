@@ -42,6 +42,11 @@ concurrency:
   group: ios-release
   cancel-in-progress: false
 
+# Read-only token: this workflow builds and uploads to Apple, and must never
+# be able to write to the repository.
+permissions:
+  contents: read
+
 env:
   APP_BUNDLE_ID: com.tjdoolittle.verseadvocate
 
