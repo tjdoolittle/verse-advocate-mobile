@@ -83,10 +83,32 @@ web assets in place. Bundle id and display name match Android; version is 1.1
 (build 2). Capacitor 8 uses Swift Package Manager, so there is no CocoaPods
 step and no `pod install` to run.
 
-Everything below needs a Mac with Xcode (Apple Silicon, macOS current enough for
-the Xcode release) plus an Apple Developer account ($99/yr).
+You need an Apple Developer account ($99/yr) either way. You do **not** need a
+Mac — GitHub Actions supplies one.
 
-### On the Mac
+### Building in CI (the normal path)
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `iOS build check` | push/PR touching `ios/`, `www/`, deps | Compiles for the simulator, signing off. No secrets needed — works today. |
+| `iOS release` | Actions → Run workflow | Archives a signed `.ipa`, uploads it to TestFlight. |
+
+Releases need eight repository secrets (certificate, provisioning profile, App
+Store Connect API key, team and app ids). Creating all of them is a web UI plus
+`openssl`, doable from Windows: **[docs/ios-ci-setup.md](docs/ios-ci-setup.md)**.
+
+Signing is deliberately *manual* rather than Xcode-automatic. Automatic signing
+on a throwaway runner asks Apple for a new distribution certificate every run,
+and Apple caps you at three.
+
+Note that this repo is private, so macOS runner minutes bill at a 10×
+multiplier — about 200 macOS minutes/month on the Free plan. The build check is
+path-filtered to stay inside that.
+
+### On a Mac (optional)
+
+Still worth doing once if you want to drive the app in a simulator, which CI
+cannot do for you.
 
 `ios/App/App/public` (the copy of `www/` that ships in the bundle) is
 gitignored and generated, so `cap sync` is not optional after a fresh clone —
@@ -96,24 +118,31 @@ without it the app builds and launches to a blank screen.
 git clone https://github.com/tjdoolittle/verse-advocate-mobile.git
 cd verse-advocate-mobile
 npm install
-npm run sync:ios      # copies www/ into the iOS bundle; also resolves SPM deps
+npm run sync:ios      # refreshes www/, then copies it into the iOS bundle
 npm run open:ios      # opens ios/App/App.xcodeproj in Xcode
 ```
 
 1. App target → Signing & Capabilities → check "Automatically manage signing"
-   and pick your Team. Xcode registers the bundle id on first build.
+   and pick your Team. (Local only — CI signs manually, for the reason above.)
 2. Run on a simulator or device to smoke-test. Check that search returns
    results, "Copy for your argument" pastes correctly, and all three
    translations load — the Bible JSON is bundled, so this works in airplane mode.
-3. Product → Destination → "Any iOS Device", then Product → Archive →
-   Distribute App → App Store Connect.
-4. In App Store Connect, create the app record (same bundle id) and fill the
-   listing. Reuse the copy in `store-listing/descriptions.md`, the privacy
-   policy URL, and the ready-made `ios-iphone69-*` (1320×2868) and
-   `ios-ipad13-*` (2064×2752) screenshots.
-5. App Privacy section: answer "Data Not Collected" — the app makes no network
-   calls at all. Age rating: no objectionable content, though the
-   questionnaire's "Religious content" style questions apply if asked.
+
+Archiving by hand is the fallback if CI is unavailable: Product → Destination →
+"Any iOS Device", then Product → Archive → Distribute App → App Store Connect.
+
+### Submitting in App Store Connect
+
+Needed once, whichever way the build was produced:
+
+1. Create the app record with the same bundle id, and fill the listing from
+   `store-listing/descriptions.md`, the privacy policy URL, and the ready-made
+   `ios-iphone69-*` (1320×2868) and `ios-ipad13-*` (2064×2752) screenshots.
+2. App Privacy: answer "Data Not Collected" — the app makes no network calls
+   at all. Age rating: no objectionable content, though the questionnaire's
+   "Religious content" style questions apply if asked.
+3. Copy the numeric Apple ID from App Information into the `APPSTORE_APP_ID`
+   secret, which the release workflow needs to route uploads.
 
 Export compliance is already declared in `Info.plist`
 (`ITSAppUsesNonExemptEncryption = false`), so App Store Connect will not ask
@@ -121,17 +150,21 @@ the encryption question on each upload.
 
 Apple review takes ~1-3 days and has no equivalent of Google's 12-tester rule.
 
-### Updating the web assets on the Mac
+### Updating the web assets
 
 ```bash
 npm run sync:ios
 ```
 
 That downloads the current web app from the public repo and copies it into the
-iOS bundle — no sibling checkout needed.
+iOS bundle — no sibling checkout needed. Commit the resulting `www/` change:
+CI builds from what is committed rather than re-downloading, so a release is
+reproducible from its commit.
 
-Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in Xcode (General tab)
-before each new upload — App Store Connect rejects a duplicate build number.
+App Store Connect rejects a build number it has already seen. The `iOS release`
+workflow handles this by defaulting the build number to the workflow run
+number; only bump `MARKETING_VERSION` when you want a new user-visible version,
+either in Xcode's General tab or via the workflow's `marketing_version` input.
 
 ## Icons / splash
 
