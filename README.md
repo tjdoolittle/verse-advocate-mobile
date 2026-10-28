@@ -66,10 +66,32 @@ web assets in place. Bundle id and display name match Android; version is 1.1
 (build 2). Capacitor 8 uses Swift Package Manager, so there is no CocoaPods
 step and no `pod install` to run.
 
-Everything below needs a Mac with Xcode (Apple Silicon, macOS current enough for
-the Xcode release) plus an Apple Developer account ($99/yr).
+You need an Apple Developer account ($99/yr) either way. You do **not** need a
+Mac — GitHub Actions supplies one.
 
-### On the Mac
+### Building in CI (the normal path)
+
+| Workflow | Trigger | What it does |
+|---|---|---|
+| `iOS build check` | push/PR touching `ios/`, `www/`, deps | Compiles for the simulator, signing off. No secrets needed — works today. |
+| `iOS release` | Actions → Run workflow | Archives a signed `.ipa`, uploads it to TestFlight. |
+
+Releases need eight repository secrets (certificate, provisioning profile, App
+Store Connect API key, team and app ids). Creating all of them is a web UI plus
+`openssl`, doable from Windows: **[docs/ios-ci-setup.md](docs/ios-ci-setup.md)**.
+
+Signing is deliberately *manual* rather than Xcode-automatic. Automatic signing
+on a throwaway runner asks Apple for a new distribution certificate every run,
+and Apple caps you at three.
+
+Note that this repo is private, so macOS runner minutes bill at a 10×
+multiplier — about 200 macOS minutes/month on the Free plan. The build check is
+path-filtered to stay inside that.
+
+### On a Mac (optional)
+
+Still worth doing once if you want to drive the app in a simulator, which CI
+cannot do for you.
 
 `ios/App/App/public` (the copy of `www/` that ships in the bundle) is
 gitignored and generated, so `cap sync` is not optional after a fresh clone —
@@ -104,7 +126,7 @@ the encryption question on each upload.
 
 Apple review takes ~1-3 days and has no equivalent of Google's 12-tester rule.
 
-### Updating the web assets on the Mac
+### Updating the web assets from macOS or Linux
 
 The PowerShell copy step above, in bash:
 
@@ -116,8 +138,10 @@ rm -f www/Net.info.json www/net.verses.txt
 npx cap sync
 ```
 
-Bump `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` in Xcode (General tab)
-before each new upload — App Store Connect rejects a duplicate build number.
+App Store Connect rejects a build number it has already seen. The `iOS release`
+workflow handles this by defaulting the build number to the workflow run
+number; only bump `MARKETING_VERSION` when you want a new user-visible version,
+either in Xcode's General tab or via the workflow's `marketing_version` input.
 
 ## Icons / splash
 
