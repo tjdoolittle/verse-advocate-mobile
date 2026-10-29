@@ -16,7 +16,23 @@ Play Store listing can never be updated again; a new app id would be required.
 
 `store-listing/` holds everything both stores ask for: app icon, Play feature
 graphic, listing copy, and screenshots at every required size — Android phone,
-7" and 10" tablet, Chromebook, plus 6.9" iPhone and 13" iPad for the App Store.
+7" and 10" tablet, Chromebook, plus 6.9" iPhone (1320×2868), medium-display
+iPhone (1206×2622) and 13" iPad (2064×2752) for the App Store.
+
+Screenshots are generated from the real web app rather than captured by hand,
+so a new device class is one command. Pass a logical size and scale that
+multiply out to the pixel size the store asks for:
+
+```bash
+npm i -D playwright && npx playwright install chromium   # once
+
+node scripts/screenshots.mjs 402 874 3 ios-iphone63   # 1206x2622
+node scripts/screenshots.mjs 440 956 3 ios-iphone69   # 1320x2868
+node scripts/screenshots.mjs 688 918 3 ios-ipad13     # 2064x2752
+```
+
+Each run writes four states — home, results, context, KJV — into
+`store-listing/` under that prefix.
 
 ## First-time setup on a new machine (Mac or Windows)
 
