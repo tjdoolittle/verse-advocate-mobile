@@ -1,5 +1,8 @@
 # Play Store listing copy — Verse & Advocate
 
+App Store copy, which needs a subtitle, keywords and promotional text that the
+Play listing has no field for, lives in `app-store-listing.md`.
+
 ## App name (max 30 chars)
 
 Verse & Advocate
