@@ -37,6 +37,17 @@ node scripts/screenshots.mjs 688 918 3 ios-ipad13      # 2064x2752
 Each run writes four states — home, results, context, KJV — into
 `store-listing/` under that prefix.
 
+Wide splash / banner graphics come from the same palette and typography:
+
+```bash
+node scripts/splash-banner.mjs 5244 2950
+node scripts/splash-banner.mjs 3840 1646
+```
+
+The lockup scales off viewport height, so any aspect ratio from 16:9 to
+ultra-wide composes without re-tuning. Output is
+`store-listing/splash-<width>x<height>.png`.
+
 ## First-time setup on a new machine (Mac or Windows)
 
 Everything works straight from this repo — no sibling checkouts, no manual
