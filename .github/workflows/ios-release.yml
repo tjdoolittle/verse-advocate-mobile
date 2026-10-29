@@ -251,24 +251,34 @@ jobs:
           chmod 600 "$key_file"
 
           ipa=$(ls "$RUNNER_TEMP/export"/*.ipa | head -1)
+          log="$RUNNER_TEMP/altool.log"
 
-          # --validate-package / --upload-package, not the deprecated
-          # --validate-app / --upload-app.
-          xcrun altool --validate-package "$ipa" \
-            --type ios \
-            --apple-id "$ASC_APP_ID" \
-            --bundle-id "$APP_BUNDLE_ID" \
-            --bundle-version "${{ steps.version.outputs.build }}" \
-            --bundle-short-version-string "${{ steps.version.outputs.version }}" \
-            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
-
+          # --upload-package, not the deprecated --upload-app. There is no
+          # matching --validate-package verb: passing one makes altool exit
+          # with ArgumentParsingFailure("Missing or no command argument
+          # specified"). Upload validates server-side anyway.
+          #
+          # --apple-id is required here: the Xcode 26 altool can otherwise
+          # pick the wrong app when two bundle ids share a prefix.
+          set +e
           xcrun altool --upload-package "$ipa" \
             --type ios \
             --apple-id "$ASC_APP_ID" \
             --bundle-id "$APP_BUNDLE_ID" \
             --bundle-version "${{ steps.version.outputs.build }}" \
             --bundle-short-version-string "${{ steps.version.outputs.version }}" \
-            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
+            --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID" 2>&1 | tee "$log"
+          status=${PIPESTATUS[0]}
+          set -e
+
+          # The altool shipped with Xcode 26 can exit 0 on a failed upload, so
+          # the exit code alone is not trustworthy — scan the output too.
+          if [ "$status" -ne 0 ] || grep -qE '^.*\bERROR\b' "$log"; then
+            echo "::error::altool upload failed (exit $status). The signed .ipa is still attached to this run as an artifact."
+            echo "--- altool --help, to confirm the supported verbs ---"
+            xcrun altool --help 2>&1 | head -60 || true
+            exit 1
+          fi
 
           echo "Uploaded ${{ steps.version.outputs.version }} (${{ steps.version.outputs.build }}). TestFlight processing takes 10-30 minutes."
 
