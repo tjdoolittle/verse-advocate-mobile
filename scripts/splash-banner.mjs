@@ -67,7 +67,7 @@ const html = `<!doctype html>
   <div class="lockup">
     <h1>Verse <span class="amp">&amp;</span> Advocate</h1>
     <div class="rule"></div>
-    <p>Describe your argument — get the verses that back it up.</p>
+    <p>Say what's on your mind — find the verses that speak to it.</p>
     <p class="meta">WEB · King James · Tyndale — entirely offline</p>
   </div>
 </body></html>`;

@@ -37,7 +37,7 @@ FEATURES
 • Plain-English topic search across the whole Bible
 • Three translations: World English Bible (modern English), King James
   Version (1611), and Tyndale (1534)
-• One-tap "Copy for your argument" — verse, reference, and translation,
+• One-tap "Copy verse" — verse, reference, and translation,
   ready to paste anywhere
 • Show context: read the surrounding verses so you never quote out of context
 • Old Testament / New Testament filters
