@@ -10,14 +10,14 @@ Verse & Advocate
 
 ## Subtitle [30]
 
-Find the verse for your case
+Find verses that speak to you
 
 ## Promotional text [170]
 
 Editable without submitting a new build — use it for seasonal or topical nudges.
 
-> Make your point with Scripture behind it. Search in plain English, read the
-> surrounding verses, copy the quote. Entirely offline.
+> Wondering what Scripture says about it? Search in plain English, read the
+> surrounding passage, copy the verse. Entirely offline.
 
 ## Keywords [100]
 
@@ -30,11 +30,11 @@ bible,verse,scripture,concordance,topical,kjv,tyndale,offline,debate,apologetics
 
 ## Description [4000]
 
-Making a point and need Scripture to back it up? Verse & Advocate turns your
-argument into a ranked list of supporting Bible verses — in milliseconds,
-entirely on your device.
+Something on your mind and wondering what Scripture says about it? Verse &
+Advocate turns a plain-English thought into a ranked list of Bible verses that
+speak to it — in milliseconds, entirely on your device.
 
-Type your case in plain English:
+Describe it in your own words:
 
 • "forgiveness is better than revenge" → Matthew 6:14–15
 • "money is the root of all evil" → 1 Timothy 6:10
@@ -45,9 +45,9 @@ HOW IT WORKS
 
 Verse & Advocate understands everyday language and maps it to biblical
 vocabulary: search "revenge" and it also finds "vengeance"; search "worry" and
-it finds "take no thought." Results are ranked to favor short, quotable verses
-— the ones that land in a conversation — and each result shows exactly which
-words matched, so you can see why it surfaced.
+it finds "take no thought." Results are ranked to favor short, memorable verses
+— the ones worth carrying with you — and each result shows exactly which words
+matched, so you can see why it surfaced.
 
 FEATURES
 
@@ -67,19 +67,20 @@ No accounts, no ads, no analytics, no network calls of any kind. Your searches
 never leave your device. The full privacy policy is one sentence long: this app
 collects no data.
 
-A NOTE ON HONEST ARGUING
+A NOTE ON READING HONESTLY
 
-Verse & Advocate finds verses about your topic — it can't tell you which side
-of the argument a verse actually supports. That's what "Show context" is for.
-Read before you quote; your debate opponent certainly will.
+Verse & Advocate finds verses about your topic — it can't tell you what a verse
+means in its own setting, or whether it says what you hoped it would. That's
+what "Show context" is for. Read the surrounding passage before you lean on a
+line; Scripture deserves that much.
 
 ## What's New [4000]
 
 For version 1.1, the first App Store release:
 
 > First release on the App Store. Search the whole Bible in plain English
-> across three translations, read surrounding context, and copy any verse with
-> its reference — all offline, with nothing sent anywhere.
+> across three translations, read the surrounding passage, and copy any verse
+> with its reference — all offline, with nothing sent anywhere.
 
 ## Support URL
 
