@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verse Advocate — Bible Verse Finder for Arguments</title>
-<meta name="description" content="Describe your argument in plain English and get the Bible verses that best support it. Searches the WEB, KJV, and Tyndale translations entirely in your browser.">
+<title>Verse &amp; Advocate — Find the Words of Scripture</title>
+<meta name="description" content="Say what's on your mind in plain English and find the Bible verses that speak to it. Searches the WEB, KJV, and Tyndale translations entirely in your browser.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#8a3324">
@@ -148,7 +148,7 @@
 <div class="wrap">
   <header>
     <h1>Verse <span class="amp">&amp;</span> Advocate</h1>
-    <p>Describe your argument — get the verses that back it up.</p>
+    <p>Say what's on your mind — find the verses that speak to it.</p>
   </header>
 
   <div class="searchbox">
@@ -442,7 +442,7 @@ async function load(key) {
     CURRENT = key;
     localStorage.setItem("bvf-translation", key);
     document.getElementById("attribution").textContent = T.attribution;
-    statusEl.textContent = `Ready — ${VERSES.length.toLocaleString()} verses indexed (${T.short}). State your case above.`;
+    statusEl.textContent = `Ready — ${VERSES.length.toLocaleString()} verses indexed (${T.short}). Share what's on your mind above.`;
     if (queryEl.value.trim()) render(queryEl.value.trim());
   } catch (e) {
     statusEl.textContent = `Could not load ${T.file} — serve this folder over HTTP (e.g. python -m http.server).`;
@@ -569,7 +569,7 @@ function render(qText) {
     resultsEl.innerHTML = `<div class="empty">Nothing found for that phrasing.<br>Try plainer words: "money", "forgiveness", "pride"…</div>`;
     return;
   }
-  statusEl.textContent = `${hits.length} verse${hits.length > 1 ? "s" : ""} for your case (searched ${VERSES.length.toLocaleString()} verses in ${ms} ms).`;
+  statusEl.textContent = `${hits.length} verse${hits.length > 1 ? "s" : ""} that speak${hits.length > 1 ? "" : "s"} to this (searched ${VERSES.length.toLocaleString()} verses in ${ms} ms).`;
 
   const allTerms = new Set([...primary.keys(), ...expanded.keys()]);
   resultsEl.innerHTML = hits.map((h, i) => {
@@ -587,7 +587,7 @@ function render(qText) {
       <div class="text">${highlight(V.t, allTerms)}</div>
       <div class="why">${esc(whyBits.join(" · "))}</div>
       <div class="actions">
-        <button data-copy="${esc(`"${V.t}" — ${ref} (${TRANSLATIONS[CURRENT].short})`)}">Copy for your argument</button>
+        <button data-copy="${esc(`"${V.t}" — ${ref} (${TRANSLATIONS[CURRENT].short})`)}">Copy verse</button>
         <button data-ctx="${h.id}">Show context</button>
       </div>
       <div class="context" id="ctx-${h.id}"></div>
