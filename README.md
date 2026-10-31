@@ -42,11 +42,17 @@ Wide splash / banner graphics come from the same palette and typography:
 ```bash
 node scripts/splash-banner.mjs 5244 2950
 node scripts/splash-banner.mjs 3840 1646
+node scripts/splash-banner.mjs 5244 2950 4.5   # survive a harsher crop
 ```
 
-The lockup scales off viewport height, so any aspect ratio from 16:9 to
-ultra-wide composes without re-tuning. Output is
-`store-listing/splash-<width>x<height>.png`.
+Output is `store-listing/splash-<width>x<height>.png`.
+
+Store surfaces centre-crop these to a far wider strip than the file itself, so
+the lockup is sized against the height that crop leaves rather than the full
+canvas. The optional third argument is the widest crop ratio the artwork must
+survive, defaulting to 3.4. A centre-crop anywhere between the file's own ratio
+and that one keeps the whole lockup, strapline included; raise it if a surface
+crops harder, at the cost of a smaller lockup in the uncropped file.
 
 ## First-time setup on a new machine (Mac or Windows)
 

@@ -18,7 +18,7 @@ const OUT = join(ROOT, 'store-listing');
 
 const [W, H] = process.argv.slice(2).map(Number);
 if (!W || !H) {
-  console.error('usage: node scripts/splash-banner.mjs <width> <height>');
+  console.error('usage: node scripts/splash-banner.mjs <width> <height> [safeCropRatio]');
   process.exit(1);
 }
 
@@ -28,8 +28,15 @@ const C = {
   accent: '#8a3324', gold: '#b08d3e', line: '#e2d9c8',
 };
 
-// Everything scales off viewport height, so the same lockup works at 16:9 and
-// at ultra-wide ratios without re-tuning.
+// Store surfaces centre-crop these banners to a much wider strip than the file
+// itself, which silently beheads a lockup sized to the full canvas. SAFE_RATIO
+// is the widest crop the artwork must survive: everything is sized against the
+// height that crop leaves behind, not the full height, so a centre-crop
+// anywhere between the file's own ratio and SAFE_RATIO loses nothing.
+const SAFE_RATIO = Number(process.argv[4]) || 3.4;
+const band = Math.min(H, W / SAFE_RATIO);   // visible height after the crop
+const u = band / 100;                       // 1 unit = 1% of the safe band
+
 const html = `<!doctype html>
 <html><head><meta charset="utf-8"><style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,28 +45,28 @@ const html = `<!doctype html>
     background: ${C.bg};
     font-family: Georgia, 'Times New Roman', serif;
     display: flex; align-items: center; justify-content: center;
-    gap: 7vh;
+    gap: ${7 * u}px;
     -webkit-font-smoothing: antialiased;
   }
   .icon {
-    width: 34vh; height: 34vh; border-radius: 22%;
-    box-shadow: 0 1.2vh 4vh rgba(43, 38, 32, 0.18);
+    width: ${34 * u}px; height: ${34 * u}px; border-radius: 22%;
+    box-shadow: 0 ${1.2 * u}px ${4 * u}px rgba(43, 38, 32, 0.18);
     flex: none;
   }
   .lockup { max-width: 62%; }
   h1 {
-    font-size: 13vh; line-height: 1.05; font-weight: 700;
-    letter-spacing: 0.3vh; color: ${C.accent}; white-space: nowrap;
+    font-size: ${13 * u}px; line-height: 1.05; font-weight: 700;
+    letter-spacing: ${0.3 * u}px; color: ${C.accent}; white-space: nowrap;
   }
   h1 .amp { color: ${C.gold}; }
   .rule {
-    height: 0.35vh; width: 16vh; margin: 3vh 0;
-    background: ${C.gold}; opacity: 0.75; border-radius: 1vh;
+    height: ${0.35 * u}px; width: ${16 * u}px; margin: ${3 * u}px 0;
+    background: ${C.gold}; opacity: 0.75; border-radius: ${u}px;
   }
-  p { font-size: 4.6vh; font-style: italic; color: ${C.inkSoft}; line-height: 1.35; }
+  p { font-size: ${4.6 * u}px; font-style: italic; color: ${C.inkSoft}; line-height: 1.35; }
   .meta {
-    margin-top: 3.2vh; font-size: 2.9vh; font-style: normal;
-    color: ${C.ink}; opacity: 0.62; letter-spacing: 0.15vh;
+    margin-top: ${3.2 * u}px; font-size: ${2.9 * u}px; font-style: normal;
+    color: ${C.ink}; opacity: 0.62; letter-spacing: ${0.15 * u}px;
   }
 </style></head>
 <body>
