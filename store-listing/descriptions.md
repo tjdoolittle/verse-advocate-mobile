@@ -65,6 +65,10 @@ Books & Reference
 
 https://tjdoolittle.github.io/verse-advocate/privacy.html
 
+## Support URL
+
+https://tjdoolittle.github.io/verse-advocate/support.html
+
 ## Contact email
 
 doolittle.thomas@gmail.com

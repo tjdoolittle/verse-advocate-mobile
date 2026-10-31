@@ -84,7 +84,7 @@ For version 1.1, the first App Store release:
 
 ## Support URL
 
-https://github.com/tjdoolittle/verse-advocate
+https://tjdoolittle.github.io/verse-advocate/support.html
 
 ## Privacy policy URL
 
